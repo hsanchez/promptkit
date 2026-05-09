@@ -24,15 +24,72 @@ prompts/
 uv sync
 ```
 
+## Use In Another Repo
+
+Install PromptKit as a dev dependency in each repo that owns prompts:
+
+```toml
+[dependency-groups]
+dev = [
+  "promptkit @ git+ssh://git@github.com/YOUR-ORG/promptkit.git",
+]
+```
+
+Then initialize that repo's prompt directory:
+
+```bash
+uv sync
+uv run prompt init
+```
+
+The consuming repo keeps the prompt state:
+
+```text
+repo/
+  prompts/
+    drafts/
+      system.yaml.j2
+    versions/
+      v0.1.0/
+        system.yaml
+        metadata.json
+    current.json
+    promptspec.yaml
+```
+
+Commit `prompts/drafts/`, `prompts/versions/`, `prompts/current.json`, and
+`prompts/promptspec.yaml`. PromptKit is the tool that creates release artifacts;
+the consuming app reads them.
+
 ## Commands
 
 ```bash
 uv run prompt init
-uv run prompt draft
 uv run prompt check
+uv run prompt draft
 uv run prompt release --patch
 uv run prompt diff
 uv run prompt rollback v0.1.0
+```
+
+Typical workflow:
+
+```bash
+uv run prompt check
+uv run prompt diff
+uv run prompt release --patch
+```
+
+Use rollback to point `current.json` at an existing release:
+
+```bash
+uv run prompt rollback v0.1.0
+```
+
+Use draft to restore editable drafts from the active release:
+
+```bash
+uv run prompt draft
 ```
 
 ## Model
@@ -43,6 +100,18 @@ uv run prompt rollback v0.1.0
 directories. Treat them as immutable after creation.
 
 `current.json` points at the active release. Rollback updates this pointer.
+
+Example:
+
+```json
+{
+  "version": "v0.1.0",
+  "updated_at": "2026-05-09T22:14:00.000000+00:00"
+}
+```
+
+Applications and CI read `current.json`, then load rendered YAML files from
+`versions/<version>/`.
 
 `promptspec.yaml` declares the rendered YAML files PromptKit manages:
 
