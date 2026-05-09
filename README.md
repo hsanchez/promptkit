@@ -77,6 +77,7 @@ uv run prompt check
 uv run prompt draft
 uv run prompt release --patch
 uv run prompt diff
+uv run prompt versions
 uv run prompt rollback v0.1.0
 ```
 
@@ -91,6 +92,7 @@ uv run prompt release --patch
 Use rollback to point `current.json` at an existing release:
 
 ```bash
+uv run prompt versions
 uv run prompt rollback v0.1.0
 ```
 
@@ -148,6 +150,14 @@ store = PromptStore("prompts")
 system = store.load("system.yaml")
 input_guardrail = store.load("input_guardrail.yaml")
 output_guardrail = store.load("output_guardrail.yaml")
+```
+
+Load a specific release for evals, replay, or debugging:
+
+```python
+versions = store.list_versions()
+system_v1 = store.load("system.yaml", version="v0.1.0")
+prompts_v1 = store.load_all(version="v0.1.0")
 ```
 
 Use those loaded values when calling your model:

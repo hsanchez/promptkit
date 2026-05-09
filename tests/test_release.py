@@ -11,6 +11,7 @@ from promptkit.release import (
   BumpType,
   bump_version,
   create_release,
+  list_versions,
   normalize_version,
   parse_bump_type,
   parse_version,
@@ -54,6 +55,20 @@ def test_bump_version(current: str | None, bump: BumpType, expected: str) -> Non
 def test_parse_bump_type_rejects_unknown_bump() -> None:
   with pytest.raises(PromptReleaseError):
     parse_bump_type("tiny")
+
+
+def test_list_versions_returns_semver_sorted_valid_directories(tmp_path: Path) -> None:
+  prompts_dir = tmp_path / "prompts"
+  versions_dir = prompts_dir / "versions"
+  versions_dir.mkdir(parents=True)
+  for name in ["v1.0.0", "v0.10.0", "v0.2.0", "notes", "vbad"]:
+    (versions_dir / name).mkdir()
+
+  assert list_versions(make_spec(prompts_dir)) == ["v0.2.0", "v0.10.0", "v1.0.0"]
+
+
+def test_list_versions_returns_empty_list_without_versions_dir(tmp_path: Path) -> None:
+  assert list_versions(make_spec(tmp_path / "prompts")) == []
 
 
 def test_create_release_writes_visible_version_metadata_and_pointer(tmp_path: Path) -> None:

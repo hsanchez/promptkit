@@ -62,11 +62,16 @@ The runtime contract is:
 
 1. Create `PromptStore("prompts")`.
 2. Resolve the active version with `current_version()` when needed.
-3. Load rendered YAML with `load(file_name)` or `load_all()`.
-4. Pass the loaded values to the LLM provider or application code.
+3. List available releases with `list_versions()`.
+4. Load active rendered YAML with `load(file_name)` or `load_all()`.
+5. Load a specific release with `load(file_name, version="v0.1.0")` or
+   `load_all(version="v0.1.0")`.
+6. Pass the loaded values to the LLM provider or application code.
 
 `PromptStore` validates file names against `promptspec.yaml`, reads
-`current.json`, and loads YAML only from the active release directory.
+`current.json` for active loads, normalizes explicit versions, and loads YAML
+only from known release directories. Release listings include valid semantic
+version directories sorted by semantic version.
 
 Future deployment integrations should live outside the core release path unless
 they preserve the same file-based artifacts and pointer model.

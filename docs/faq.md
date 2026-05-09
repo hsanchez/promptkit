@@ -71,6 +71,32 @@ system = store.load("system.yaml")
 `PromptStore` reads `current.json`, loads rendered YAML from
 `versions/<version>/`, and rejects files not declared in `promptspec.yaml`.
 
+## Can my app load a specific prompt version?
+
+Yes. Pass `version` to `PromptStore`:
+
+```python
+versions = store.list_versions()
+system = store.load("system.yaml", version="v0.1.0")
+prompts = store.load_all(version="v0.1.0")
+```
+
+Omit `version` to load the active release from `current.json`.
+
+## How do I see available prompt versions?
+
+Use the CLI:
+
+```bash
+uv run prompt versions
+```
+
+Or use `PromptStore`:
+
+```python
+versions = store.list_versions()
+```
+
 ## Should my app read from drafts?
 
 No. `drafts/` can contain unrendered Jinja variables and work-in-progress

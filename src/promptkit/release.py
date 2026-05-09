@@ -54,15 +54,19 @@ def normalize_version(version: str) -> str:
 
 def latest_version(spec: PromptSpec) -> str | None:
   """Return latest version, if any."""
+  versions = list_versions(spec)
+  return versions[-1] if versions else None
+
+
+def list_versions(spec: PromptSpec) -> list[str]:
+  """Return valid release versions sorted by semantic version."""
   if not spec.versions_dir.exists():
-    return None
-  versions = []
+    return []
+  versions: list[str] = []
   for child in spec.versions_dir.iterdir():
     if child.is_dir() and VERSION_RE.match(child.name):
-      versions.append(child.name)
-  if not versions:
-    return None
-  return sorted(versions, key=parse_version)[-1]
+      versions.append(normalize_version(child.name))
+  return sorted(versions, key=parse_version)
 
 
 def bump_version(current: str | None, bump: BumpType) -> str:

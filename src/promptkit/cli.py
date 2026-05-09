@@ -8,6 +8,7 @@ import typer
 from rich.console import Console
 
 from promptkit.manager import PromptManager
+from promptkit.store import PromptStore
 
 app = typer.Typer(no_args_is_help=True)
 console = Console()
@@ -84,6 +85,13 @@ def rollback(version: str, prompts_dir: Path = Path("prompts")) -> None:
   """Point current.json at an existing release."""
   PromptManager(prompts_dir).rollback(version)
   console.print(f"[green]Pointed current.json at {version}.[/green]")
+
+
+@app.command()
+def versions(prompts_dir: Path = Path("prompts")) -> None:
+  """List available prompt releases."""
+  for version in PromptStore(prompts_dir).list_versions():
+    console.print(version)
 
 
 def main() -> None:

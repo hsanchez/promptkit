@@ -7,9 +7,9 @@ from typing import Any
 
 import yaml
 
-from promptkit.config import load_spec, validate_prompt_file_name
+from promptkit.config import PromptSpec, load_spec, validate_prompt_file_name
 from promptkit.errors import PromptLoadError, PromptReleaseError
-from promptkit.release import read_current_version
+from promptkit.release import list_versions, normalize_version, read_current_version
 
 
 class PromptStore:
@@ -33,8 +33,8 @@ class PromptStore:
       raise PromptLoadError(f"No current prompt release exists: {spec.current_pointer_path}")
     return version
 
-  def load(self, file_name: str) -> dict[str, Any]:
-    """Load one rendered prompt YAML file from the active release.
+  def load(self, file_name: str, version: str | None = None) -> dict[str, Any]:
+    """Load one rendered prompt YAML file.
 
     Raises:
       PromptLoadError: If the file is undeclared, missing, or invalid YAML.
@@ -45,14 +45,8 @@ class PromptStore:
     if validated_file_name not in spec.files:
       raise PromptLoadError(f"Prompt file is not declared in promptspec.yaml: {file_name}")
 
-    try:
-      version = read_current_version(spec)
-    except PromptReleaseError as exc:
-      raise PromptLoadError(f"Cannot read current prompt version: {exc}") from exc
-    if version is None:
-      raise PromptLoadError(f"No current prompt release exists: {spec.current_pointer_path}")
-
-    prompt_path = spec.versions_dir / version / validated_file_name
+    resolved_version = self._resolve_version(spec, version)
+    prompt_path = spec.versions_dir / resolved_version / validated_file_name
     if not prompt_path.exists():
       raise PromptLoadError(f"Released prompt file is missing: {prompt_path}")
 
@@ -64,7 +58,7 @@ class PromptStore:
       raise PromptLoadError(f"Released prompt YAML must be a mapping: {prompt_path}")
     return loaded
 
-  def load_all(self) -> dict[str, dict[str, Any]]:
+  def load_all(self, version: str | None = None) -> dict[str, dict[str, Any]]:
     """Load every prompt declared in promptspec.yaml.
 
     Raises:
@@ -72,4 +66,32 @@ class PromptStore:
       PromptSpecError: If promptspec.yaml is invalid.
     """
     spec = load_spec(self.prompts_dir)
-    return {file_name: self.load(file_name) for file_name in spec.files}
+    resolved_version = self._resolve_version(spec, version)
+    return {file_name: self.load(file_name, version=resolved_version) for file_name in spec.files}
+
+  def list_versions(self) -> list[str]:
+    """Return valid release versions sorted by semantic version.
+
+    Raises:
+      PromptSpecError: If promptspec.yaml is invalid.
+    """
+    return list_versions(load_spec(self.prompts_dir))
+
+  def _resolve_version(self, spec: PromptSpec, version: str | None) -> str:
+    if version is not None:
+      try:
+        resolved_version = normalize_version(version)
+      except PromptReleaseError as exc:
+        raise PromptLoadError(f"Invalid prompt release version: {version}") from exc
+    else:
+      try:
+        resolved_version = read_current_version(spec)
+      except PromptReleaseError as exc:
+        raise PromptLoadError(f"Cannot read current prompt version: {exc}") from exc
+      if resolved_version is None:
+        raise PromptLoadError(f"No current prompt release exists: {spec.current_pointer_path}")
+
+    release_dir = spec.versions_dir / resolved_version
+    if not release_dir.is_dir():
+      raise PromptLoadError(f"Unknown prompt release: {resolved_version}")
+    return resolved_version
