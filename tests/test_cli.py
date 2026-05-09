@@ -20,7 +20,7 @@ def test_versions_command_lists_available_versions(tmp_path: Path) -> None:
   assert result.output.splitlines() == ["v0.0.1", "v0.0.2"]
 
 
-def test_versions_command_outputs_nothing_without_releases(tmp_path: Path) -> None:
+def test_versions_command_reports_when_no_releases_exist(tmp_path: Path) -> None:
   prompts_dir = tmp_path / "prompts"
   PromptManager(prompts_dir).init()
   runner = CliRunner()
@@ -28,4 +28,4 @@ def test_versions_command_outputs_nothing_without_releases(tmp_path: Path) -> No
   result = runner.invoke(app, ["versions", "--prompts-dir", str(prompts_dir)])
 
   assert result.exit_code == 0
-  assert result.output == ""
+  assert result.output.strip() == "No releases found."

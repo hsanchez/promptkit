@@ -46,17 +46,7 @@ class PromptStore:
       raise PromptLoadError(f"Prompt file is not declared in promptspec.yaml: {file_name}")
 
     resolved_version = self._resolve_version(spec, version)
-    prompt_path = spec.versions_dir / resolved_version / validated_file_name
-    if not prompt_path.exists():
-      raise PromptLoadError(f"Released prompt file is missing: {prompt_path}")
-
-    try:
-      loaded = yaml.safe_load(prompt_path.read_text())
-    except yaml.YAMLError as exc:
-      raise PromptLoadError(f"Released prompt YAML is invalid: {prompt_path}") from exc
-    if not isinstance(loaded, dict):
-      raise PromptLoadError(f"Released prompt YAML must be a mapping: {prompt_path}")
-    return loaded
+    return self._load_declared_file(spec, validated_file_name, resolved_version)
 
   def load_all(self, version: str | None = None) -> dict[str, dict[str, Any]]:
     """Load every prompt declared in promptspec.yaml.
@@ -67,7 +57,10 @@ class PromptStore:
     """
     spec = load_spec(self.prompts_dir)
     resolved_version = self._resolve_version(spec, version)
-    return {file_name: self.load(file_name, version=resolved_version) for file_name in spec.files}
+    return {
+      file_name: self._load_declared_file(spec, file_name, resolved_version)
+      for file_name in spec.files
+    }
 
   def list_versions(self) -> list[str]:
     """Return valid release versions sorted by semantic version.
@@ -95,3 +88,16 @@ class PromptStore:
     if not release_dir.is_dir():
       raise PromptLoadError(f"Unknown prompt release: {resolved_version}")
     return resolved_version
+
+  def _load_declared_file(self, spec: PromptSpec, file_name: str, version: str) -> dict[str, Any]:
+    prompt_path = spec.versions_dir / version / file_name
+    if not prompt_path.exists():
+      raise PromptLoadError(f"Released prompt file is missing: {prompt_path}")
+
+    try:
+      loaded = yaml.safe_load(prompt_path.read_text())
+    except yaml.YAMLError as exc:
+      raise PromptLoadError(f"Released prompt YAML is invalid: {prompt_path}") from exc
+    if not isinstance(loaded, dict):
+      raise PromptLoadError(f"Released prompt YAML must be a mapping: {prompt_path}")
+    return loaded

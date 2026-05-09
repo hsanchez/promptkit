@@ -90,7 +90,11 @@ def rollback(version: str, prompts_dir: Path = Path("prompts")) -> None:
 @app.command()
 def versions(prompts_dir: Path = Path("prompts")) -> None:
   """List available prompt releases."""
-  for version in PromptStore(prompts_dir).list_versions():
+  available_versions = PromptStore(prompts_dir).list_versions()
+  if not available_versions:
+    console.print("[yellow]No releases found.[/yellow]")
+    return
+  for version in available_versions:
     console.print(version)
 
 
