@@ -1,0 +1,19 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+MEMORY.md
+MEMORY_LOG.md
+
+# Local environment — never commit real keys
+.env
+.env.local
+
+PLAN.md
