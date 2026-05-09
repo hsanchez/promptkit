@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+import promptkit.release as release_module
 from promptkit.config import PromptSpec
 from promptkit.errors import PromptReleaseError
 from promptkit.manager import PromptManager
@@ -86,6 +87,24 @@ def test_create_release_accepts_explicit_variables(tmp_path: Path) -> None:
 
   release = prompts_dir / "versions" / version / "system.yaml"
   assert "Be precise." in release.read_text()
+
+
+def test_create_release_removes_partial_release_after_non_os_error(
+  tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+  prompts_dir = tmp_path / "prompts"
+  manager = PromptManager(prompts_dir)
+  manager.init()
+
+  def fail_metadata(release_dir: Path, version: str, files: tuple[str, ...]) -> dict[str, object]:
+    raise PromptReleaseError("metadata failed")
+
+  monkeypatch.setattr(release_module, "write_metadata", fail_metadata)
+
+  with pytest.raises(PromptReleaseError):
+    create_release(manager.spec())
+
+  assert not (prompts_dir / "versions" / "v0.0.1").exists()
 
 
 def test_read_current_version_rejects_malformed_pointer(tmp_path: Path) -> None:

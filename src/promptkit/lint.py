@@ -32,11 +32,11 @@ def lint_prompts(spec: PromptSpec) -> list[str]:
 
     all_found_variables.update(found_variables)
 
-    undeclared_required = found_variables - set(spec.required_variables)
-    if undeclared_required:
+    unlisted_template_variables = found_variables - set(spec.required_variables)
+    if unlisted_template_variables:
       errors.append(
         f"{template_path} references variables not listed in promptspec.yaml: "
-        f"{sorted(undeclared_required)}"
+        f"{sorted(unlisted_template_variables)}"
       )
 
     try:

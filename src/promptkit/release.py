@@ -153,7 +153,7 @@ def create_release(
     write_metadata(release_dir, version, spec.files)
 
     write_current_pointer(spec, version)
-  except OSError:
+  except Exception:
     if release_dir.exists():
       shutil.rmtree(release_dir)
     raise
