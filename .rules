@@ -1,9 +1,10 @@
 # Readiness and Synchronization Check
 
-If the user says "are you on?", treat it as a readiness check:
-1. Re-read this `.rules` file
-2. Read `MEMORY.md` at task start when prior project context may affect the work.
-3. Read `MEMORY_LOG.md` only if `MEMORY.md` is empty or we need to debug, recover context, or trace prior decisions.
+If the user says "are you on?", always:
+1. Re-read this `.rules` file.
+2. Read `MEMORY.md`.
+3. If `MEMORY.md` has no substantive content beyond headings or whitespace, read `MEMORY_LOG.md`.
+4. Also read `MEMORY_LOG.md` when debugging, recovering context, or tracing prior decisions.
 
 # Python coding guidelines
 
