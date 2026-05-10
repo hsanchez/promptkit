@@ -9,6 +9,14 @@ from promptkit.release import read_current_version
 from promptkit.render import render_prompts
 
 
+def diff_lines(content: str) -> list[str]:
+  """Return lines safe for unified_diff output."""
+  lines = content.splitlines(keepends=True)
+  if lines and not lines[-1].endswith("\n"):
+    lines[-1] = f"{lines[-1]}\n"
+  return lines
+
+
 def diff_current_against_drafts(spec: PromptSpec) -> str:
   """Return a unified diff between the current release and rendered drafts."""
   rendered = render_prompts(spec)
@@ -24,8 +32,8 @@ def diff_current_against_drafts(spec: PromptSpec) -> str:
 
     chunks.extend(
       unified_diff(
-        current_content.splitlines(keepends=True),
-        draft_content.splitlines(keepends=True),
+        diff_lines(current_content),
+        diff_lines(draft_content),
         fromfile=f"{current_version or 'current'}/{file_name}",
         tofile=f"drafts/{file_name}",
       )

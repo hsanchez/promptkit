@@ -38,6 +38,29 @@ def test_diff_has_changes_against_current_pointer(tmp_path: Path) -> None:
   assert "careful verifier" in diff
 
 
+def test_diff_separates_multiple_files_without_trailing_newlines(tmp_path: Path) -> None:
+  prompts_dir = tmp_path / "prompts"
+  manager = PromptManager(prompts_dir)
+
+  manager.init()
+  manager.release()
+  (prompts_dir / "promptspec.yaml").write_text(
+    "files:\n"
+    "  - system.yaml\n"
+    "  - input_guardrail.yaml\n"
+    "  - output_guardrail.yaml\n"
+    "required_variables: []\n"
+    "max_file_bytes: 1000\n"
+  )
+  (prompts_dir / "drafts" / "input_guardrail.yaml.j2").write_text("policy: first")
+  (prompts_dir / "drafts" / "output_guardrail.yaml.j2").write_text("policy: second")
+
+  diff = manager.diff()
+
+  assert "+policy: first\n--- v0.0.1/output_guardrail.yaml" in diff
+  assert "first---" not in diff
+
+
 def test_rollback_updates_current_pointer(tmp_path: Path) -> None:
   prompts_dir = tmp_path / "prompts"
   manager = PromptManager(prompts_dir)

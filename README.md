@@ -42,7 +42,7 @@ Install PromptKit as a dev dependency in each repo that owns prompts:
 ```toml
 [dependency-groups]
 dev = [
-  "promptkit @ git+ssh://git@github.com/hsanchez/promptkit.git",
+  "promptkit @ git+https://github.com/hsanchez/promptkit.git",
 ]
 ```
 
