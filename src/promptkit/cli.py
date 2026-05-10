@@ -81,7 +81,7 @@ def diff(prompts_dir: Path = Path("prompts")) -> None:
   if not output:
     console.print("[green]No prompt changes.[/green]")
     return
-  console.print(Syntax(output, "diff", theme="ansi_dark"))
+  console.print(Syntax(output, "diff"))
 
 
 @app.command()
