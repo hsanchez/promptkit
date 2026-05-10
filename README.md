@@ -1,10 +1,15 @@
 # PromptKit
 
-PromptKit is a small Git-based prompt release tool for teams that want prompt
-changes to move through drafts, rendered artifacts, and explicit promotion
-pointers.
+Hardcoded prompt strings are a liability. Enterprise prompt management tools
+are too heavy for a fast-moving R&D team. And git alone isn't enough for
+production — you need immutable artifacts, explicit configuration, and safety
+checks.
 
-It keeps the workflow file-based:
+PromptKit is a Git-based prompt versioning system that gives prompt changes
+the same engineering discipline as code: draft, lint, render, version, and
+promote.
+
+It tracks the full workflow in Git — file-based and CI-friendly:
 
 ```text
 prompts/
@@ -22,6 +27,8 @@ prompts/
   promptspec.yaml
 ```
 
+Requires Python 3.14 or later.
+
 ## Install Locally
 
 ```bash
@@ -35,7 +42,7 @@ Install PromptKit as a dev dependency in each repo that owns prompts:
 ```toml
 [dependency-groups]
 dev = [
-  "promptkit @ git+ssh://git@github.com/YOUR-ORG/promptkit.git",
+  "promptkit @ git+ssh://git@github.com/hsanchez/promptkit.git",
 ]
 ```
 
@@ -102,7 +109,7 @@ Use draft to restore editable drafts from the active release:
 uv run prompt draft
 ```
 
-## Model
+## Concepts
 
 `drafts/` contains editable Jinja templates. Developers and agents work here.
 
@@ -184,14 +191,24 @@ generated_at: {{ generated_at }}
 
 In that template, `generated_at` is required and `model` is optional.
 
-List required variables in `promptspec.yaml` so `prompt check` can catch
-unexpected template inputs:
+`required_variables` in `promptspec.yaml` declares the variables your templates
+are expected to use. `prompt check` reports any template variable not listed
+there, and any listed variable that no template references:
 
 ```yaml
 required_variables:
   - generated_at
 ```
 
-## 📌 Citation
+## Contributing
 
-Please cite the `promptkit` tool itself following [CITATION.cff](./CITATION.cff) file.
+Open an issue before sending a pull request for non-trivial changes. All
+contributions must pass `uv run prek run --all-files` and `uv run pytest`.
+
+## License
+
+Apache 2.0. See [LICENSE](./LICENSE).
+
+## Citation
+
+Please cite PromptKit following the [CITATION.cff](./CITATION.cff) file.
