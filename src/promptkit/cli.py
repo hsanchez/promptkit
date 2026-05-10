@@ -6,6 +6,7 @@ from pathlib import Path
 
 import typer
 from rich.console import Console
+from rich.syntax import Syntax
 
 from promptkit.manager import PromptManager
 from promptkit.store import PromptStore
@@ -75,9 +76,12 @@ def release(
 
 @app.command()
 def diff(prompts_dir: Path = Path("prompts")) -> None:
-  """Show diff between the current release and rendered drafts."""
+  """Show a colored diff between the current release and rendered drafts."""
   output = PromptManager(prompts_dir).diff()
-  console.print(output or "[green]No prompt changes.[/green]")
+  if not output:
+    console.print("[green]No prompt changes.[/green]")
+    return
+  console.print(Syntax(output, "diff", theme="ansi_dark"))
 
 
 @app.command()
