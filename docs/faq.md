@@ -8,7 +8,7 @@ artifacts, metadata, checksums, and a clear pointer to the active version.
 ## What is the difference between drafts and versions?
 
 `drafts/` contains editable Jinja templates. `versions/` contains rendered YAML
-artifacts created by PromptKit.
+artifacts created by Promptory.
 
 ## Are versions editable?
 
@@ -20,7 +20,7 @@ new draft change and release a new version instead.
 Release artifacts are part of the project state users should review and commit.
 A visible `versions/` directory makes that workflow explicit.
 
-## Does PromptKit store templates or rendered prompts?
+## Does Promptory store templates or rendered prompts?
 
 Drafts are templates. Versions are rendered YAML prompts.
 
@@ -40,11 +40,11 @@ files:
   - output_guardrail.yaml
 ```
 
-PromptKit renders each matching draft template into the same release directory.
+Promptory renders each matching draft template into the same release directory.
 
 ## How are Jinja variables handled?
 
-PromptKit renders with Jinja `StrictUndefined`. Missing variables fail instead
+Promptory renders with Jinja `StrictUndefined`. Missing variables fail instead
 of rendering as empty strings.
 
 ## Are Jinja defaults considered required variables?
@@ -60,7 +60,7 @@ It does not render Jinja.
 Use `PromptManager.release(variables=...)` before runtime:
 
 ```python
-from promptkit.manager import PromptManager
+from promptory.manager import PromptManager
 
 version = PromptManager("prompts").release(
   variables={
@@ -82,7 +82,7 @@ rewrite files inside `versions/`.
 Use `PromptStore`:
 
 ```python
-from promptkit import PromptStore
+from promptory import PromptStore
 
 store = PromptStore("prompts")
 system = store.load("system.yaml")
@@ -115,6 +115,30 @@ Or use `PromptStore`:
 
 ```python
 versions = store.list_versions()
+```
+
+## Can I use curl with the registry service?
+
+Yes. Start the service:
+
+```bash
+uv run prompt serve --port 8000
+```
+
+Then call the JSON endpoints:
+
+```bash
+curl http://localhost:8000/versions
+curl http://localhost:8000/versions/current
+curl http://localhost:8000/prompts
+curl http://localhost:8000/prompts/system.yaml
+curl "http://localhost:8000/prompts/system.yaml?version=v0.1.0"
+```
+
+Use `python -m json.tool` for readable output:
+
+```bash
+curl -s http://localhost:8000/prompts | python -m json.tool
 ```
 
 ## Should my app read from drafts?
